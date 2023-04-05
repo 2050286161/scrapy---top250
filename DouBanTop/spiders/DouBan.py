@@ -18,7 +18,7 @@ class DoubanSpider(scrapy.Spider):
         for Movie in Movies:
             MovieData=Movie.xpath('div[@class="hd"]/a/span/text()').getall()
             MovieName="".join(MovieData)
-            MovieInfo=Movie.xpath('div[@class="bd"]/div[@class="star"]/span/text()').get()
+            MovieInfo=Movie.xpath('div[@class="bd"]/p/text()').get().strip('\n ')
             Star = Movie.xpath('div[@class="bd"]/div[@class="star"]/span/text()').extract()[0]
             Quote = Movie.xpath('div[@class="bd"]/p[@class="quote"]/span/text()').extract()
             # quote可能为空，因此需要先进行判断
@@ -27,7 +27,7 @@ class DoubanSpider(scrapy.Spider):
             else:
                 Quote = ''
             item['MovieName'] = MovieName
-            item['MovieInfo'] = ';'.join(MovieInfo)
+            item['MovieInfo'] = MovieInfo
             item['Star'] = Star
             item['Quote'] = Quote
             yield item

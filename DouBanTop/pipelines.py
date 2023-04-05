@@ -17,9 +17,8 @@ class DoubantopPipeline:
         self.cursor = self.conn.cursor()
 
     def process_item(self, item, spider):
-        print(item)
         MovieName = item['MovieName']
-        MovieInfo = item['MovieName']
+        MovieInfo = item['MovieInfo']
         Star = item['Star']
         Quote = item['Quote']
         sql = "insert into DouBanInfo(MovieName,MovieInfo,Star,Quote) values ('" + MovieName + "','" + MovieInfo + "','" + Star + "','" + Quote + "')"

@@ -2,11 +2,13 @@
 #
 # See documentation in:
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
-
+import random
 from scrapy import signals
-
+from fake_useragent import UserAgent
 # useful for handling different item types with a single interface
 from itemadapter import is_item, ItemAdapter
+
+from DouBanTop.IP.GetIp import get_proxy
 
 
 class DoubantopSpiderMiddleware:
@@ -101,3 +103,47 @@ class DoubantopDownloaderMiddleware:
 
     def spider_opened(self, spider):
         spider.logger.info("Spider opened: %s" % spider.name)
+
+
+class RandomUserAgentMiddlware:
+    # 随机更换user-agent
+    def __init__(self, crawler):
+        super(RandomUserAgentMiddlware, self).__init__()
+        self.ua = UserAgent()
+
+    @classmethod
+    def from_crawler(cls, crawler):
+        return cls(crawler)
+
+    def process_request(self, request, spider):
+        request.headers.setdefault("User-Agent", self.ua.random)
+        print(self.ua.random)
+
+
+class SimpleProxyMiddleware:
+
+    def __init__(self):
+        self.proxyList = get_proxy()
+
+    # Downloader Middleware的核心方法，只有实现了其中一个或多个方法才算自定义了一个Downloader Middleware
+    def process_request(self, request, spider):
+        # 随机从其中选择一个，并去除左右两边空格
+        proxy_list = random.choice(self.proxyList)
+        proxy = 'http://' + proxy_list[0] + ':' + str(proxy_list[1])
+    # 打印结果出来观察
+        print("this is request ip:" + proxy)
+    # 设置request的proxy属性的内容为代理ip
+        request.meta['proxy'] = proxy
+
+    # Downloader Middleware的核心方法，只有实现了其中一个或多个方法才算自定义了一个Downloader Middleware
+    def process_response(self, request, response, spider):
+        # 请求失败不等于200
+        if response.status != 200:
+            # 重新选择一个代理ip
+            proxy_list = random.choice(self.proxyList)
+            proxy = 'http://'+proxy_list[0] + ':' + str(proxy_list[1])
+            print("this is response ip:" + proxy)
+            # 设置新的代理ip内容
+            request.mete['proxy'] = proxy
+            return request
+        return response
